@@ -10,6 +10,8 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.8"
       PYTHON_ARCH: "32"
+      platform: x86
+      msvs_toolset: 14
 
 #    - PYTHON: "C:\\Python33"
 #      PYTHON_VERSION: "3.3.5"
@@ -38,6 +40,11 @@ init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
 install:
+  - SET SDK_VERSION=v3.0.0-rc1-277-ge04b061
+  - ps: Write-Output "fetching mapnik sdk https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:SDK_VERSION.7z"
+  - ps: Start-FileDownload https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:SDK_VERSION.7z -FileName mapnik-sdk.7z
+  - ps: Write-Output "extracting mapnik sdk"
+  - ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
   - "powershell appveyor\\install.ps1"
 
 build: off
