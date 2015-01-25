@@ -82,6 +82,7 @@ function main () {
     InstallPackage $env:PYTHON wheel
     InstallPackage $env:PYTHON '--install-option="--no-cython-compile" cython'
     InstallPackage $env:PYTHON '-r requirements-dev.txt'
+    InstallPackage $env:PYTHON numpy
     InstallPackage $env:PYTHON pytest
     InstallPackage $env:PYTHON coveralls
     InstallPackage $env:PYTHON '-e .'
