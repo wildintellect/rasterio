@@ -43,7 +43,8 @@ install:
 build: off
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py test"
+#  - "%WITH_COMPILER% %PYTHON%/python setup.py test"
+   - coverage run --source=rasterio --omit='*.pxd,*.pyx,*/tests/*,*/docs/*,*/examples/*,*/benchmarks/*,*/rio/main.py,*/rio/__init__.py' -m py.test
 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
@@ -51,5 +52,5 @@ after_test:
 artifacts:
   - path: dist\*
 
-#on_success:
-#  - TODO: upload the content of dist/*.whl to a public wheelhouse
+on_success:
+  - coveralls
