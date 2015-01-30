@@ -51,6 +51,7 @@ build: off
 
 test_script:
   - cmd: dir c:\coverage*.* /b/s
+  - SET PATH=%PYTHON%\scripts;%PATH%
   - coverage run --source=rasterio --omit='*.pxd,*.pyx,*/tests/*,*/docs/*,*/examples/*,*/benchmarks/*,*/rio/main.py,*/rio/__init__.py' -m py.test
 
 after_test:
