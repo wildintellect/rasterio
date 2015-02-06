@@ -1,0 +1,64 @@
+environment:
+
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.8"
+      PYTHON_ARCH: "32"
+      platform: x86
+      msvs_toolset: 14
+
+#    - PYTHON: "C:\\Python33"
+#      PYTHON_VERSION: "3.3.5"
+#      PYTHON_ARCH: "32"
+
+#    - PYTHON: "C:\\Python34"
+#      PYTHON_VERSION: "3.4.1"
+#      PYTHON_ARCH: "32"
+
+#    - PYTHON: "C:\\Python27-x64"
+#      PYTHON_VERSION: "2.7.8"
+#      PYTHON_ARCH: "64"
+#      WINDOWS_SDK_VERSION: "v7.0"
+
+#    - PYTHON: "C:\\Python33-x64"
+#      PYTHON_VERSION: "3.3.5"
+#      PYTHON_ARCH: "64"
+#      WINDOWS_SDK_VERSION: "v7.1"
+
+#    - PYTHON: "C:\\Python34-x64"
+#      PYTHON_VERSION: "3.4.1"
+#      PYTHON_ARCH: "64"
+#      WINDOWS_SDK_VERSION: "v7.1"
+
+init:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+
+install:
+  - SET SDK_VERSION=v3.0.0-rc1-277-ge04b061
+  - ps: Write-Output "fetching mapnik sdk https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:SDK_VERSION.7z"
+  - ps: Start-FileDownload https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:SDK_VERSION.7z -FileName mapnik-sdk.7z
+  - ps: Write-Output "extracting mapnik sdk"
+  - ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
+  - "powershell appveyor\\install.ps1"
+
+build: off
+
+test_script:
+#  - cmd: dir c:\coverage*.* /b/s
+  - SET PATH=%PYTHON%\scripts;%PATH%
+  - coverage run --source=rasterio --omit='*.pxd,*.pyx,*/tests/*,*/docs/*,*/examples/*,*/benchmarks/*,*/rio/main.py,*/rio/__init__.py' -m py.test
+
+after_test:
+  - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
+
+artifacts:
+  - path: dist\*
+
+on_success:
+  - coveralls
