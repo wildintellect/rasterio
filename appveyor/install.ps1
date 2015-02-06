@@ -85,7 +85,7 @@ function main () {
     InstallPackage $env:PYTHON numpy
     InstallPackage $env:PYTHON pytest
     InstallPackage $env:PYTHON coveralls
-    InstallPackage $env:PYTHON '-e C:/projects/rasterio/'
+    InstallPackage $env:PYTHON '-e .'
 }
 
 main
