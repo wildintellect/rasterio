@@ -45,20 +45,39 @@ install:
   - ps: Start-FileDownload https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:SDK_VERSION.7z -FileName mapnik-sdk.7z
   - ps: Write-Output "extracting mapnik sdk"
   - ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
-  - "powershell appveyor\\install.ps1"
 
-build: off
+  # Install Python (from the official .msi of http://python.org) and pip when
+  # not already installed.
+  - "powershell ./appveyor/install.ps1"
+
+  # Prepend newly installed Python to the PATH of this build (this cannot be
+  # done from inside the powershell script as it would require to restart
+  # the parent CMD process).
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  # Install the build dependencies of the project. If some dependencies contain
+  # compiled extensions and are not provided as pre-built wheel packages,
+  # pip will build them from source using the MSVC compiler matching the
+  # target Python version and architecture
+  - "%CMD_IN_ENV% pip install -r requirements-dev.txt"
+
+build: false
 
 test_script:
-#  - cmd: dir c:\coverage*.* /b/s
-  - SET PATH=%PYTHON%\scripts;%PATH%
-  - coverage run --source=rasterio --omit='*.pxd,*.pyx,*/tests/*,*/docs/*,*/examples/*,*/benchmarks/*,*/rio/main.py,*/rio/__init__.py' -m py.test
+  # Build the compiled extension and run the project tests
+  - "%CMD_IN_ENV% py.test"
 
 after_test:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
+  # If tests are successful, create a whl package for the project.
+  - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
+  - ps: "ls dist"
 
 artifacts:
   - path: dist\*
 
-on_success:
-  - coveralls
+#on_success:
+#  - TODO: upload the content of dist/*.whl to a public wheelhouse

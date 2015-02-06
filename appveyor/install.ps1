@@ -79,13 +79,6 @@ function InstallPackage ($python_home, $pkg) {
 function main () {
     InstallPython $env:PYTHON_VERSION $env:PYTHON_ARCH $env:PYTHON
     InstallPip $env:PYTHON
-    InstallPackage $env:PYTHON wheel
-    InstallPackage $env:PYTHON '--install-option="--no-cython-compile" cython'
-    InstallPackage $env:PYTHON '-r requirements-dev.txt'
-    InstallPackage $env:PYTHON numpy
-    InstallPackage $env:PYTHON pytest
-    InstallPackage $env:PYTHON coveralls
-    InstallPackage $env:PYTHON '-e .'
 }
 
 main
