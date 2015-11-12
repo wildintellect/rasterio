@@ -1,5 +1,6 @@
 import rasterio
 from rasterio import transform
+from affine import Affine
 
 
 def test_window_transform():
@@ -74,3 +75,30 @@ def test_window_bounds():
 
             for e, a in zip(expected, actual):
                 assert round(e, 7) == round(a, 7)
+
+
+def test_affine_roundtrip(tmpdir):
+
+    def affine_roundtrip(aft):
+        with rasterio.open('tests/data/RGB.byte.tif') as src:
+            kwargs = {
+                'crs': {'init': 'epsg:4326'},
+                'affine': aft,
+                'count': 3,
+                'dtype': rasterio.uint8,
+                'driver': 'GTiff',
+                'width': src.shape[1],
+                'height': src.shape[0],
+                'nodata': 255
+            }
+
+            outfilename = str(tmpdir.join("rgb.tif"))
+            with rasterio.open(outfilename, 'w', **kwargs) as out:
+                assert out.affine == aft
+                out.write(src.read())
+
+            with rasterio.open(outfilename) as out_src:
+                assert out_src.affine == aft
+
+    affine_roundtrip(Affine(2, 0, 0, 0, -2, 0))
+    affine_roundtrip(Affine(1, 0, 0, 0, -1, 0))
