@@ -53,6 +53,7 @@ rasterio/_*.html
 
 # Sphinx documentation
 docs/_build/
+docs/api/_build/
 
 # PyBuilder
 target/
